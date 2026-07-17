@@ -22,10 +22,18 @@ app.use(cors({
   origin(origin, callback) {
     console.log(`CORS Request - Origin: "${origin}"`);
     // Allow requests with no origin (curl, health checks, server-to-server)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
       return callback(null, true);
     }
-    console.error(`CORS Blocked - Origin "${origin}" not in allowed list:`, allowedOrigins);
+    
+    const isAllowed = allowedOrigins.includes(origin);
+    const isVercelPreview = origin.endsWith('.vercel.app');
+
+    if (isAllowed || isVercelPreview) {
+      return callback(null, true);
+    }
+
+    console.error(`CORS Blocked - Origin "${origin}" not allowed.`);
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST'],
